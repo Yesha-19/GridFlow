@@ -5,6 +5,7 @@ import { Map, Layers, Tent } from 'lucide-react';
 import { getRiskBand } from '../../utils/riskUtils';
 import { createVenueIcon, createZoneIcon } from '../../utils/mapIcons';
 import { generateHeatmapData, generateCrowdFlowData } from '../../utils/mockData';
+import { useEventContext } from '../../context/EventContext.jsx';
 import HeatmapLayer from './HeatmapLayer';
 
 // Component to handle map re-centering
@@ -19,6 +20,7 @@ function MapController({ center, zoom }) {
 }
 
 export default function RouteMap({ event, prediction, resources, routing }) {
+  const { isSnapping } = useEventContext();
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showCrowd, setShowCrowd] = useState(false);
   const [showZones, setShowZones] = useState(true);
@@ -41,6 +43,12 @@ export default function RouteMap({ event, prediction, resources, routing }) {
           <h3 className="font-display text-sm font-semibold text-console-text">
             Tactical Map
           </h3>
+          {isSnapping && (
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-signal animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-signal"></span>
+              Snapping routes...
+            </span>
+          )}
         </div>
         
         {/* Map Layers Toggle */}

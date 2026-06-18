@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { Clock3, Gauge, MapPinned, ShieldAlert, Target } from 'lucide-react';
-import { getRiskBand, formatMinutes } from '../../utils/riskUtils';
+import { getRiskBand, formatMinutes, getWeatherAdjustedRisk } from '../../utils/riskUtils';
 import { useCountdown } from '../../hooks/useCountdown';
+import { useEventContext } from '../../context/EventContext.jsx';
 
 const RADIUS = 78;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const TICK_COUNT = 36;
 
 export default function RiskCard({ event, prediction }) {
+  const { weatherData } = useEventContext();
   const [animatedOffset, setAnimatedOffset] = useState(CIRCUMFERENCE);
-  const band = getRiskBand(prediction?.congestionRiskScore ?? 0);
+  
+  const baseScore = prediction?.congestionRiskScore ?? 0;
+  const { score: adjustedScore, multiplier } = getWeatherAdjustedRisk(baseScore, weatherData?.condition);
+  const band = getRiskBand(adjustedScore);
   const countdown = useCountdown(event?.startTime);
 
   useEffect(() => {
     const target =
-      CIRCUMFERENCE - (CIRCUMFERENCE * (prediction?.congestionRiskScore ?? 0)) / 100;
+      CIRCUMFERENCE - (CIRCUMFERENCE * adjustedScore) / 100;
     const id = requestAnimationFrame(() => setAnimatedOffset(target));
     return () => cancelAnimationFrame(id);
-  }, [prediction?.congestionRiskScore]);
+  }, [adjustedScore]);
 
   if (!prediction) return null;
 
@@ -76,11 +81,17 @@ export default function RiskCard({ event, prediction }) {
 
         <div className="absolute flex flex-col items-center">
           <span className="font-mono text-4xl font-semibold text-console-text">
-            {prediction.congestionRiskScore}
+            {adjustedScore}
           </span>
           <span className="font-mono text-[10px] uppercase tracking-widest text-console-muted">
             / 100 score
           </span>
+          {multiplier > 0 && (
+            <span className="mt-0.5 flex items-center gap-0.5 font-mono text-[10px] font-bold text-risk-high animate-pulse">
+              <span>{weatherData.condition === 'Clouds' ? '☁️' : '🌧️'}</span>
+              <span>+{Math.round(multiplier * 100)}%</span>
+            </span>
+          )}
         </div>
       </div>
 

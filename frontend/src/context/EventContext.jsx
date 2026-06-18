@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { getForecast } from '../services/predictionApi';
 import { getRoutingPlan } from '../services/routingApi';
+import { snapRouteToRoads } from '../services/osrmApi';
 
 const EventContext = createContext(null);
 
@@ -25,6 +26,8 @@ export function EventProvider({ children }) {
   const [historicalComparison, setHistoricalComparison] = useState(persisted?.historicalComparison ?? null);
   const [status, setStatus] = useState('idle'); // idle | loading | ready | error
   const [error, setError] = useState(null);
+  const [isSnapping, setIsSnapping] = useState(false);
+  const [weatherData, setWeatherData] = useState(null);
 
   const persist = useCallback((next) => {
     try {
@@ -57,6 +60,47 @@ export function EventProvider({ children }) {
           historicalComparison: hist || [],
         });
 
+        // Trigger snapped routing in background
+        (async () => {
+          setIsSnapping(true);
+          try {
+            const snappedRouting = { ...routingPlan };
+            if (routingPlan.affectedRoutes) {
+              snappedRouting.affectedRoutes = await Promise.all(
+                routingPlan.affectedRoutes.map(async (route) => {
+                  const snapped = await snapRouteToRoads(route.coordinates);
+                  return { ...route, coordinates: snapped.coordinates };
+                })
+              );
+            }
+            if (routingPlan.diversionRoutes) {
+              snappedRouting.diversionRoutes = await Promise.all(
+                routingPlan.diversionRoutes.map(async (route) => {
+                  const snapped = await snapRouteToRoads(route.coordinates);
+                  return {
+                    ...route,
+                    coordinates: snapped.coordinates,
+                    distance_km: snapped.distance_km,
+                    estimated_time_min: snapped.estimated_time_min,
+                  };
+                })
+              );
+            }
+            setRouting(snappedRouting);
+            persist({
+              currentEvent: eventPayload,
+              prediction: pred,
+              resources: res,
+              routing: snappedRouting,
+              historicalComparison: hist || [],
+            });
+          } catch (snapErr) {
+            console.warn('[EventContext] route snapping failed:', snapErr);
+          } finally {
+            setIsSnapping(false);
+          }
+        })();
+
         return { prediction: pred, resources: res, routing: routingPlan };
       } catch (err) {
         setStatus('error');
@@ -75,6 +119,8 @@ export function EventProvider({ children }) {
     setHistoricalComparison(null);
     setStatus('idle');
     setError(null);
+    setIsSnapping(false);
+    setWeatherData(null);
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -91,11 +137,26 @@ export function EventProvider({ children }) {
       historicalComparison,
       status,
       error,
+      isSnapping,
+      weatherData,
+      setWeatherData,
       runForecast,
       reset,
       hasForecast: Boolean(currentEvent && prediction),
     }),
-    [currentEvent, prediction, resources, routing, historicalComparison, status, error, runForecast, reset]
+    [
+      currentEvent,
+      prediction,
+      resources,
+      routing,
+      historicalComparison,
+      status,
+      error,
+      isSnapping,
+      weatherData,
+      runForecast,
+      reset,
+    ]
   );
 
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

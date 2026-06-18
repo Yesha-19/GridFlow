@@ -40,3 +40,21 @@ export function formatDateTime(isoString) {
 export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+export const WEATHER_MULTIPLIERS = {
+  clear: 0.0,
+  clouds: 0.05,
+  drizzle: 0.10,
+  rain: 0.20,
+  thunderstorm: 0.30
+};
+
+export function getWeatherAdjustedRisk(baseScore, weatherCondition) {
+  if (baseScore == null) return { score: 0, multiplier: 0 };
+  if (!weatherCondition) return { score: baseScore, multiplier: 0 };
+  const cond = weatherCondition.trim().toLowerCase();
+  const multiplier = WEATHER_MULTIPLIERS[cond] ?? 0;
+  const score = Math.round(Math.min(Math.max(baseScore * (1 + multiplier), 4), 98));
+  return { score, multiplier };
+}
+

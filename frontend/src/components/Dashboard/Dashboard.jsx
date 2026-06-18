@@ -5,6 +5,7 @@ import { PLANNED_EVENT_TYPES, UNPLANNED_EVENT_TYPES } from '../../utils/constant
 import { formatDateTime, formatNumber } from '../../utils/riskUtils';
 import RouteMap from '../RouteMap/RouteMap.jsx';
 import RiskCard from '../RiskCard/RiskCard.jsx';
+import WeatherPanel from '../WeatherPanel/WeatherPanel.jsx';
 import ResourcePanel from '../ResourcePanel/ResourcePanel.jsx';
 import AnalyticsPanel from '../AnalyticsPanel/AnalyticsPanel.jsx';
 import HistoricalCard from '../HistoricalCard/HistoricalCard.jsx';
@@ -72,6 +73,7 @@ export default function Dashboard({ event, prediction, resources, routing, histo
 
         <div className="flex flex-col gap-5">
           <RiskCard event={event} prediction={prediction} />
+          <WeatherPanel />
           <ResourcePanel resources={resources} />
           <EventTimeline event={event} prediction={prediction} />
           <AlertSystem event={event} prediction={prediction} />
