@@ -19,6 +19,7 @@ export const PLANNED_EVENT_TYPES = [
   { value: 'cultural_event', label: 'Cultural Event / Concert', baseWeight: 0.55 },
   { value: 'protest_strike', label: 'Protest / Strike', baseWeight: 0.9 },
   { value: 'vip_movement', label: 'VIP Movement', baseWeight: 0.7 },
+  { value: 'others', label: 'Other Unplanned Incident', baseWeight: 0.50 },
 ];
 
 export const UNPLANNED_EVENT_TYPES = [
