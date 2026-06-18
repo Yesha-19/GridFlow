@@ -1,4 +1,8 @@
+
 import { PLANNED_EVENT_TYPES, UNPLANNED_EVENT_TYPES } from './constants';
+
+// Combine both lists once so generateMockForecast can always look up a type weight.
+const EVENT_TYPES = [...PLANNED_EVENT_TYPES, ...UNPLANNED_EVENT_TYPES];
 
 // --- Tiny seeded PRNG (mulberry32) -----------------------------------------
 function seedFromString(str) {
@@ -49,6 +53,7 @@ const BENGALURU_HOTSPOTS = [
  */
 export function generateMockForecast(event) {
   const rng = makeRng(event);
+  // BUG FIX: was referencing undefined EVENT_TYPES — now imported from combined list above.
   const typeWeight =
     EVENT_TYPES.find((t) => t.value === event.eventType)?.baseWeight ?? 0.6;
 
@@ -70,7 +75,7 @@ export function generateMockForecast(event) {
   const confidenceScore = Math.round(72 + rng() * 20);
   const peakOffsetMinutes = Math.round(20 + rng() * 70);
 
-  // Risk level tier
+  // Risk level tier — aligned with SeverityBadge thresholds (35/60/80).
   let riskLevel = 'LOW';
   if (congestionRiskScore >= 80) riskLevel = 'CRITICAL';
   else if (congestionRiskScore >= 60) riskLevel = 'HIGH';
@@ -95,7 +100,6 @@ export function generateMockForecast(event) {
     deploymentZones: buildDeploymentZones(event, congestionRiskScore, rng),
   };
 
-  // Historical comparison
   const historicalComparison = generateHistoricalComparison(event, congestionRiskScore, rng);
 
   return { prediction, resources, historicalComparison };
@@ -124,9 +128,6 @@ function buildDeploymentZones(event, score, rng) {
   });
 }
 
-/**
- * Generate historical comparison data for similar past events.
- */
 function generateHistoricalComparison(event, currentScore, rng) {
   const HISTORICAL_DB = [
     { name: 'Ganesh Chaturthi Procession — MG Road', type: 'religious_festival', crowd: 45000, spike: 72, officers: 28, barricades: 85 },
@@ -143,7 +144,6 @@ function generateHistoricalComparison(event, currentScore, rng) {
     { name: 'Auto Expo 2024 — Whitefield', type: 'cultural_event', crowd: 18000, spike: 42, officers: 12, barricades: 40 },
   ];
 
-  // Find similar events by type + crowd size
   const scored = HISTORICAL_DB.map(h => {
     let similarity = 0;
     if (h.type === event.eventType) similarity += 40;
@@ -166,9 +166,6 @@ function generateHistoricalComparison(event, currentScore, rng) {
   }));
 }
 
-/**
- * Builds illustrative affected / diversion routes around the venue.
- */
 export function generateMockRouting(event, prediction) {
   const rng = makeRng(event);
   const { latitude: lat, longitude: lng } = event;
@@ -236,9 +233,6 @@ const SAMPLE_PAST_EVENTS = [
   { eventName: 'Independence Day Cultural Concert', eventType: 'cultural_event', expectedAttendance: 22000, durationHours: 5 },
 ];
 
-/**
- * Past events with predicted-vs-actual outcomes, for the Validation page.
- */
 export function generateMockValidationHistory() {
   return SAMPLE_PAST_EVENTS.map((evt, i) => {
     const rng = seedFromString(`${evt.eventName}-validation`);
@@ -276,7 +270,6 @@ export function generateMockValidationHistory() {
   });
 }
 
-/** 24-hour congestion intensity profile */
 export function generateHourlyProfile(event, prediction) {
   const rng = makeRng(event);
   const startHour = event.startTime
@@ -299,7 +292,6 @@ export function generateHourlyProfile(event, prediction) {
   });
 }
 
-/** Generate heatmap data points from event location */
 export function generateHeatmapData(event, prediction) {
   const rng = makeRng(event);
   const { latitude: lat, longitude: lng } = event;
@@ -307,11 +299,10 @@ export function generateHeatmapData(event, prediction) {
   const radius = prediction?.affectedRadiusKm ?? 2;
   const points = [];
 
-  // Generate clusters of heat points
   const nPoints = 40 + Math.round(score * 0.6);
   for (let i = 0; i < nPoints; i++) {
     const angle = rng() * Math.PI * 2;
-    const dist = rng() * radius * 0.01; // Convert km to approx degrees
+    const dist = rng() * radius * 0.01;
     const intensity = Math.max(0.2, 1 - (dist / (radius * 0.01)));
     points.push({
       lat: lat + Math.sin(angle) * dist + (rng() - 0.5) * 0.002,
@@ -322,7 +313,6 @@ export function generateHeatmapData(event, prediction) {
   return points;
 }
 
-/** Generate simulated crowd flow particles */
 export function generateCrowdFlowData(event, prediction) {
   const rng = makeRng(event);
   const { latitude: lat, longitude: lng } = event;
@@ -347,13 +337,12 @@ export function generateCrowdFlowData(event, prediction) {
   return particles;
 }
 
-/** Generate alert feed for real-time panel */
 export function generateAlertFeed(event, prediction) {
   const rng = makeRng(event);
   const score = prediction?.congestionRiskScore ?? 50;
   const hotspot = BENGALURU_HOTSPOTS[Math.floor(rng() * BENGALURU_HOTSPOTS.length)];
 
-  const alerts = [
+  return [
     {
       id: 'alert-1',
       type: score >= 80 ? 'critical' : score >= 60 ? 'high' : 'moderate',
@@ -390,16 +379,13 @@ export function generateAlertFeed(event, prediction) {
       timestamp: new Date(Date.now() - 900000).toISOString(),
     },
   ];
-
-  return alerts;
 }
 
-/** Generate model accuracy trend for Learning Loop */
 export function generateAccuracyTrend() {
   const rng = seedFromString('accuracy-trend-v2');
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   let baseAccuracy = 68;
-  return months.map((month, i) => {
+  return months.map((month) => {
     baseAccuracy += 1.5 + rng() * 2.5;
     const accuracy = Math.min(96, baseAccuracy);
     return {
@@ -410,7 +396,6 @@ export function generateAccuracyTrend() {
   });
 }
 
-/** Generate city-wide analytics data */
 export function generateCityAnalytics() {
   const rng = seedFromString('city-analytics-v2');
   return {
