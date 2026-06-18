@@ -1,0 +1,32 @@
+{
+  "rmse": 3.2856,
+  "mae": 2.5899,
+  "r2": 0.9114,
+  "cv_rmse_mean": 3.3961,
+  "cv_rmse_std": 0.1627,
+  "train_samples": 6445,
+  "test_samples": 1612,
+  "n_features": 20,
+  "feature_columns": [
+    "hour_of_day",
+    "day_of_week",
+    "is_weekend",
+    "month",
+    "is_peak_hour",
+    "is_night",
+    "is_corridor",
+    "zone_event_density",
+    "junction_event_density",
+    "duration_hours",
+    "requires_road_closure",
+    "cause_vehicle_breakdown",
+    "cause_accident",
+    "cause_tree_fall",
+    "cause_road_damage",
+    "cause_waterlogging",
+    "cause_fire",
+    "cause_construction",
+    "cause_others",
+    "cause_other"
+  ]
+}

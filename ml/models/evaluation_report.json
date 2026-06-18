@@ -1,0 +1,16 @@
+{
+  "overall": {
+    "rmse": 2.6854,
+    "mae": 2.061,
+    "r2": 0.9389,
+    "tier_accuracy_pct": 93.47
+  },
+  "error_distribution": {
+    "mean_error": 0.0119,
+    "std_error": 2.6854,
+    "within_5pts_pct": 93.26,
+    "within_10pts_pct": 99.86,
+    "within_15pts_pct": 99.95
+  },
+  "n_samples": 8057
+}

@@ -1,0 +1,18 @@
+# Frontend dependencies and builds
+node_modules/
+frontend/dist/
+
+# Backend dependencies and cache
+venv/
+__pycache__/
+
+# Local Databases
+backend/gridlock.db
+*.db
+
+# Environment Variables
+.env
+
+# Editor / OS files
+.vscode/
+.DS_Store

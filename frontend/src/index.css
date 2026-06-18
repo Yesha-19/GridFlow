@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-console-bg text-console-text font-sans antialiased;
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(76, 141, 255, 0.07), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(255, 122, 69, 0.05), transparent 45%);
+  }
+
+  :focus-visible {
+    outline: 2px solid #4c8dff;
+    outline-offset: 2px;
+  }
+
+  /* Respect reduced-motion preferences for every custom animation in this app. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-md border border-console-border bg-console-raised px-3 py-2 text-sm text-console-text placeholder:text-console-muted/70 transition-colors focus:border-signal focus:outline-none;
+  }
+}
+
+@layer utilities {
+  .scrollbar-console {
+    scrollbar-width: thin;
+    scrollbar-color: #232e4a transparent;
+  }
+  .scrollbar-console::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-console::-webkit-scrollbar-thumb {
+    background-color: #232e4a;
+    border-radius: 999px;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(35, 46, 74, 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(35, 46, 74, 0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+/* ---- Leaflet dark-console overrides ---- */
+.leaflet-container {
+  background: #0b1020;
+  font-family: 'Inter', sans-serif;
+}
+
+.leaflet-control-attribution {
+  background: rgba(7, 11, 20, 0.7) !important;
+  color: #7c8aa8 !important;
+}
+.leaflet-control-attribution a {
+  color: #4c8dff !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #0f1729 !important;
+  color: #e6ecf8 !important;
+  border-color: #232e4a !important;
+}
+.leaflet-control-zoom a:hover {
+  background-color: #161f36 !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0f1729;
+  color: #e6ecf8;
+  border: 1px solid #232e4a;
+}
+.leaflet-popup-close-button {
+  color: #7c8aa8 !important;
+}
+
+.venue-pulse-icon {
+  position: relative;
+}
+.venue-pulse-icon .pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: currentColor;
+}
