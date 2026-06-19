@@ -21,6 +21,7 @@ from app.api.prediction import router as prediction_router
 from app.api.routing import router as routing_router
 from app.api.validation import router as validation_router
 from app.api.events import router as events_router
+from app.api.analytics import router as analytics_router
 from app.database.db import create_tables
 from app.database.seed_data import seed_historical_data
 
@@ -67,6 +68,7 @@ app.include_router(prediction_router, prefix="/api", tags=["Prediction"])
 app.include_router(routing_router, prefix="/api", tags=["Routing"])
 app.include_router(validation_router, prefix="/api", tags=["Validation"])
 app.include_router(events_router, prefix="/api", tags=["Events"])
+app.include_router(analytics_router, prefix="/api", tags=["Analytics"])
 
 
 @app.get("/")

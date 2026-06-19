@@ -1,17 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BarChart3, TrendingUp, MapPin, Calendar, Users, Target,
-  Activity, Zap, Award
+  Activity, Zap, Award, Loader2
 } from 'lucide-react';
-import { generateCityAnalytics, generateAccuracyTrend } from '../utils/mockData';
 import { getRiskBand } from '../utils/riskUtils';
+import { getAnalytics } from '../services/analyticsApi';
 
 /**
  * Analytics page — city-wide congestion insights and model performance.
  */
 export default function Analytics() {
-  const analytics = useMemo(() => generateCityAnalytics(), []);
-  const accuracyTrend = useMemo(() => generateAccuracyTrend(), []);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAnalytics().then((res) => {
+      setData(res);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading || !data) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="animate-spin text-signal" size={32} />
+      </div>
+    );
+  }
+
+  const { analytics, accuracyTrend } = data;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">

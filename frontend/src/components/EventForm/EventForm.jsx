@@ -1,22 +1,10 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { UNPLANNED_EVENT_TYPES, PLANNED_EVENT_TYPES } from '../../utils/constants';
+import { UNPLANNED_EVENT_TYPES, PLANNED_EVENT_TYPES, DATASET_LOCATIONS } from '../../utils/constants';
 import { createVenueIcon, createDraggingIcon } from '../../utils/mapIcons';
 import LocationSearch from '../LocationSearch/LocationSearch';
 import LocationInfoCard from '../LocationSearch/LocationInFocard';
-
-// ─── Predefined Bengaluru venues ──────────────────────────────────────────────
-const BENGALURU_VENUES = [
-  { name: 'Chinnaswamy Stadium Area', lat: 12.9788, lng: 77.5996 },
-  { name: 'Palace Grounds',           lat: 13.0070, lng: 77.5725 },
-  { name: 'Kanteerava Stadium',        lat: 12.9756, lng: 77.5928 },
-  { name: 'Freedom Park',             lat: 12.9770, lng: 77.5734 },
-  { name: 'Lalbagh',                  lat: 12.9507, lng: 77.5848 },
-  { name: 'MG Road',                  lat: 12.9758, lng: 77.6069 },
-  { name: 'Koramangala',              lat: 12.9352, lng: 77.6245 },
-  { name: 'Whitefield',               lat: 12.9698, lng: 77.7500 },
-];
 
 const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 };
 
@@ -122,7 +110,7 @@ export default function EventForm({ onSubmit, status }) {
       return;
     }
 
-    const venue = BENGALURU_VENUES.find(v => v.name === venueName);
+    const venue = DATASET_LOCATIONS.find(v => v.name === venueName);
     if (venue) {
       setFormData(prev => ({ ...prev, venueName }));
       setLocation({ name: venue.name, lat: venue.lat, lng: venue.lng, address: `${venue.name}, Bengaluru, Karnataka, India`, source: 'venue' });
@@ -335,7 +323,7 @@ export default function EventForm({ onSubmit, status }) {
               value={formData.venueName}
             >
               <option value="">— Select venue —</option>
-              {BENGALURU_VENUES.map(v => (
+              {DATASET_LOCATIONS.map(v => (
                 <option key={v.name} value={v.name}>{v.name}</option>
               ))}
               <option value="other">Other Location…</option>

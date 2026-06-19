@@ -40,7 +40,7 @@ export default function EventTimeline({ event, prediction }) {
   // Determine current phase based on countdown
   let currentPhaseIdx = 0;
   if (countdown.isPast) {
-    const minutesPast = (countdown.hours * 60 + countdown.minutes);
+    const minutesPast = (countdown.days * 24 * 60) + (countdown.hours * 60) + countdown.minutes;
     if (minutesPast > durationMin) currentPhaseIdx = 4;
     else if (minutesPast > peakOffset + durationMin * 0.3) currentPhaseIdx = 3;
     else if (minutesPast > peakOffset) currentPhaseIdx = 2;
