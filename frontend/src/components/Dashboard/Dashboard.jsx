@@ -107,7 +107,7 @@ export default function Dashboard({ event, prediction, resources, routing, histo
 }
 
   const pdfBtn = {
-    [PDF_IDLE]:    { label: 'Download Briefing PDF', icon: FileDown,    cls: 'border-console-border bg-console-raised text-console-text hover:bg-console-border' },
+    [PDF_IDLE]:    { label: 'Download PDF', icon: FileDown,    cls: 'border-console-border bg-console-raised text-console-text hover:bg-console-border' },
     [PDF_LOADING]: { label: 'Generating PDF…',       icon: Loader2,     cls: 'border-signal/40 bg-signal/10 text-signal cursor-wait' },
     [PDF_SUCCESS]: { label: 'PDF Downloaded',        icon: CheckCircle, cls: 'border-risk-low/40 bg-risk-low/10 text-risk-low' },
     [PDF_ERROR]:   { label: 'PDF Failed – Retry',    icon: XCircle,     cls: 'border-risk-critical/40 bg-risk-critical/10 text-risk-critical' },

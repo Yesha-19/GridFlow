@@ -35,11 +35,9 @@ export default function NavBar() {
             </div>
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-console-text">
-                GRIDLOCK
+                GRIDFLOW 
               </span>
-              <span className="ml-1 font-mono text-[10px] uppercase text-signal">
-                2.0 MVP
-              </span>
+             
             </div>
           </NavLink>
 
@@ -78,7 +76,6 @@ export default function NavBar() {
                 <span className="text-sm font-medium text-white">
                   {user.user_metadata?.username || user.email}
                 </span>
-                <span className="font-mono text-[10px] uppercase text-signal">Authorized</span>
               </div>
               <button
                 onClick={handleLogout}
