@@ -1,4 +1,4 @@
-# Gridlock — Frontend (Event Congestion Optimizer)
+# Gridflow — Frontend (Event Congestion Optimizer)
 
 React + Vite + Tailwind + Leaflet frontend for the Flipkart Gridlock Hackathon MVP.
 
