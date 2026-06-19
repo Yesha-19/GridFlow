@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Brain, TrendingUp, RefreshCw } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { generateAccuracyTrend } from '../../utils/mockData';
 import { getRiskBand } from '../../utils/riskUtils';
 
@@ -46,28 +47,51 @@ export default function LearningLoop() {
             Trending up
           </span>
         </div>
-        <div className="mt-2 flex h-24 items-end gap-[3px]">
-          {trend.map(({ month, accuracy }, i) => {
-            const height = ((accuracy - 60) / 40) * 100;
-            const band = getRiskBand(accuracy);
-            return (
-              <div key={month} className="group relative flex-1">
-                <div
-                  className="rounded-t-sm bg-signal/70 transition-all duration-500 group-hover:bg-signal"
-                  style={{ height: `${Math.max(4, height)}%` }}
-                />
-                {/* Tooltip on hover */}
-                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-console-bg px-1.5 py-0.5 text-[9px] text-console-text opacity-0 transition-opacity group-hover:opacity-100">
-                  {accuracy}%
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-1 flex justify-between text-[9px] text-console-muted">
-          {trend.filter((_, i) => i % 3 === 0).map(t => (
-            <span key={t.month}>{t.month}</span>
-          ))}
+        <div className="mt-2 h-24 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={trend}
+              margin={{ top: 10, right: 10, left: -25, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#161F36" vertical={false} />
+              <XAxis
+                dataKey="month"
+                stroke="#7C8AA8"
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'Space Grotesk' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+              />
+              <YAxis
+                stroke="#7C8AA8"
+                domain={[60, 100]}
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#0F1729',
+                  borderColor: '#232E4A',
+                  borderRadius: '8px',
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '11px',
+                  color: '#E6ECF8',
+                }}
+                formatter={(v) => [`${v}%`, 'Accuracy']}
+                labelStyle={{ color: '#7C8AA8', fontWeight: 'bold' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="accuracy"
+                name="Accuracy"
+                stroke="#4C8DFF"
+                strokeWidth={2.5}
+                dot={{ r: 3, strokeWidth: 1, fill: '#4C8DFF' }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

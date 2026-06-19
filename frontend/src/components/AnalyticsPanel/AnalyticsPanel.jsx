@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { BarChart3 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid } from 'recharts';
 import { generateHourlyProfile } from '../../utils/mockData';
 import { getRiskBand } from '../../utils/riskUtils';
 
@@ -29,34 +30,75 @@ export default function AnalyticsPanel({ event, prediction }) {
         </span>
       </div>
 
-      <div className="mt-5 flex h-36 items-end gap-[3px] sm:gap-1">
-        {profile.map(({ hour, value }) => {
-          const band = getRiskBand(value);
-          const isEventHour = hour === startHour;
-          return (
-            <div key={hour} className="group relative flex-1">
-              <div
-                className={`rounded-t-sm transition-[height] duration-700 ${band.bgClass} ${
-                  isEventHour ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
-                }`}
-                style={{ height: `${Math.max(4, value)}%` }}
-              />
-              {isEventHour && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 font-mono text-[9px] text-signal">
-                  start
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-2 flex justify-between font-mono text-[10px] text-console-muted">
-        <span>00:00</span>
-        <span>06:00</span>
-        <span>12:00</span>
-        <span>18:00</span>
-        <span>23:00</span>
+      <div className="mt-5 h-36 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={profile}
+            margin={{ top: 15, right: 10, left: -25, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#161F36" vertical={false} />
+            <XAxis
+              dataKey="hour"
+              stroke="#7C8AA8"
+              tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'Space Grotesk' }}
+              tickLine={false}
+              axisLine={{ stroke: '#232E4A' }}
+              ticks={[0, 6, 12, 18, 23]}
+              tickFormatter={(h) => `${String(h).padStart(2, '0')}:00`}
+            />
+            <YAxis
+              stroke="#7C8AA8"
+              domain={[0, 100]}
+              tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+              tickLine={false}
+              axisLine={{ stroke: '#232E4A' }}
+              tickFormatter={(v) => `${v}%`}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#0F1729',
+                borderColor: '#232E4A',
+                borderRadius: '8px',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '11px',
+                color: '#E6ECF8',
+              }}
+              formatter={(v) => [`${v}%`, 'Congestion Risk']}
+              labelFormatter={(h) => `Time: ${String(h).padStart(2, '0')}:00`}
+            />
+            <ReferenceLine
+              x={startHour}
+              stroke="#4C8DFF"
+              strokeDasharray="3 3"
+              label={{
+                value: 'start',
+                position: 'top',
+                fill: '#4C8DFF',
+                fontSize: 9,
+                fontFamily: 'JetBrains Mono',
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="value"
+              name="Congestion Risk"
+              stroke="#4C8DFF"
+              strokeWidth={2.5}
+              dot={(props) => {
+                const { cx, cy, payload } = props;
+                if (payload.hour === startHour) {
+                  return (
+                    <circle key={`dot-${payload.hour}`} cx={cx} cy={cy} r={5} fill="#4C8DFF" stroke="#0F1729" strokeWidth={1.5} />
+                  );
+                }
+                return (
+                  <circle key={`dot-${payload.hour}`} cx={cx} cy={cy} r={3} fill="#4C8DFF" />
+                );
+              }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="mt-4 flex items-center gap-4 text-[11px] text-console-muted">

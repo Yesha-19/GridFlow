@@ -3,6 +3,7 @@ import {
   BarChart3, TrendingUp, MapPin, Calendar, Users, Target,
   Activity, Zap, Award, Loader2
 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { getRiskBand } from '../utils/riskUtils';
 import { getAnalytics } from '../services/analyticsApi';
 
@@ -170,27 +171,73 @@ export default function Analytics() {
             Monthly Event Volume & Congestion
           </h3>
         </div>
-        <div className="mt-5 flex h-40 items-end gap-1">
-          {analytics.monthlyTrend.map(({ month, events, avgScore }) => {
-            const band = getRiskBand(avgScore);
-            const height = `${(events / 100) * 100}%`;
-            return (
-              <div key={month} className="group relative flex-1">
-                <div
-                  className={`rounded-t-sm ${band.bgClass} opacity-70 transition-all duration-500 group-hover:opacity-100`}
-                  style={{ height }}
-                />
-                <div className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded bg-console-bg px-1.5 py-0.5 text-[9px] text-console-text opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
-                  {events} events · Score {avgScore}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-2 flex justify-between text-[9px] text-console-muted">
-          {analytics.monthlyTrend.map(t => (
-            <span key={t.month} className="flex-1 text-center">{t.month}</span>
-          ))}
+        <div className="mt-5 h-40 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={analytics.monthlyTrend}
+              margin={{ top: 10, right: 10, left: -25, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#161F36" vertical={false} />
+              <XAxis
+                dataKey="month"
+                stroke="#7C8AA8"
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'Space Grotesk' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+              />
+              <YAxis
+                yAxisId="left"
+                stroke="#4C8DFF"
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+                label={{ value: 'Events', angle: -90, position: 'insideLeft', offset: 10, style: { textAnchor: 'middle', fill: '#4C8DFF', fontSize: 10, fontFamily: 'Space Grotesk' } }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                stroke="#FF7A45"
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+                label={{ value: 'Congestion Score', angle: 90, position: 'insideRight', offset: 10, style: { textAnchor: 'middle', fill: '#FF7A45', fontSize: 10, fontFamily: 'Space Grotesk' } }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#0F1729',
+                  borderColor: '#232E4A',
+                  borderRadius: '8px',
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '11px',
+                  color: '#E6ECF8',
+                }}
+                labelStyle={{ color: '#7C8AA8', fontWeight: 'bold' }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: '11px', fontFamily: 'Space Grotesk, sans-serif', paddingTop: '5px' }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="events"
+                name="Event Volume"
+                stroke="#4C8DFF"
+                strokeWidth={2.5}
+                dot={{ r: 4, strokeWidth: 1, fill: '#4C8DFF' }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="avgScore"
+                name="Congestion Score"
+                stroke="#FF7A45"
+                strokeWidth={2.5}
+                dot={{ r: 4, strokeWidth: 1, fill: '#FF7A45' }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -205,26 +252,51 @@ export default function Analytics() {
             {accuracyTrend[accuracyTrend.length - 1].accuracy}% current
           </span>
         </div>
-        <div className="mt-4 flex h-28 items-end gap-1">
-          {accuracyTrend.map(({ month, accuracy }) => {
-            const height = ((accuracy - 60) / 40) * 100;
-            return (
-              <div key={month} className="group relative flex-1">
-                <div
-                  className="rounded-t-sm bg-gradient-to-t from-signal/60 to-signal transition-all duration-500 group-hover:from-signal/80 group-hover:to-signal"
-                  style={{ height: `${Math.max(4, height)}%` }}
-                />
-                <div className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] text-console-text opacity-0 transition-opacity group-hover:opacity-100">
-                  {accuracy}%
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-2 flex justify-between text-[9px] text-console-muted">
-          {accuracyTrend.filter((_, i) => i % 2 === 0).map(t => (
-            <span key={t.month}>{t.month}</span>
-          ))}
+        <div className="mt-4 h-28 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={accuracyTrend}
+              margin={{ top: 10, right: 10, left: -25, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#161F36" vertical={false} />
+              <XAxis
+                dataKey="month"
+                stroke="#7C8AA8"
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'Space Grotesk' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+              />
+              <YAxis
+                stroke="#7C8AA8"
+                domain={[60, 100]}
+                tick={{ fill: '#7C8AA8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                tickLine={false}
+                axisLine={{ stroke: '#232E4A' }}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#0F1729',
+                  borderColor: '#232E4A',
+                  borderRadius: '8px',
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '11px',
+                  color: '#E6ECF8',
+                }}
+                formatter={(v) => [`${v}%`, 'Accuracy']}
+                labelStyle={{ color: '#7C8AA8', fontWeight: 'bold' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="accuracy"
+                name="Accuracy"
+                stroke="#4C8DFF"
+                strokeWidth={2.5}
+                dot={{ r: 4, strokeWidth: 1, fill: '#4C8DFF' }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
