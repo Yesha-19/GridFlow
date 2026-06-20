@@ -30,7 +30,7 @@ class EventInput(BaseModel):
     venueName: str
     latitude: float
     longitude: float
-    expectedAttendance: int = Field(ge=100)
+    expectedAttendance: int = Field(ge=30)
     startTime: str  # ISO 8601
     durationHours: float = Field(gt=0)
 
