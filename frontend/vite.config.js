@@ -7,9 +7,6 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
-    // While the backend team builds out the FastAPI service, this proxy means
-    // the frontend can call relative "/api/..." paths in both dev and prod.
-    // Flip VITE_USE_MOCK in .env to "false" once real endpoints are live.
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
@@ -20,5 +17,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
 });
