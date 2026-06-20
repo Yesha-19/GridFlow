@@ -54,12 +54,21 @@ def compute_resource_plan(
     ambulance_standby = max(1, int(1 + attendance_factor * 5))
 
     # ── Deployment zones ───────────────────────────────────
+    if event_type in ["political_rally", "religious_festival", "cultural_event", "sports_event"]:
+        zone_names = ["Main Entry Gate", "VIP / Stage Approach", "North Junction", "South Service Road", "Parking Overflow Lot"]
+    elif event_type == "vip_movement":
+        zone_names = ["Convoy Entry Route", "Convoy Exit Route", "Primary Intersection", "Secondary Intersection", "Perimeter Hold"]
+    elif event_type == "protest_strike":
+        zone_names = ["Main Gathering Point", "March Route Start", "March Route End", "Key Intersection", "Perimeter Hold"]
+    else:
+        zone_names = ["Primary Access Point", "Secondary Approach", "North Junction", "South Junction", "Outer Perimeter"]
+
     zone_configs = [
-        {"name": "Main Entry Gate", "spread": 0.004, "priority_order": 0},
-        {"name": "VIP / Stage Approach", "spread": 0.005, "priority_order": 1},
-        {"name": "North Junction", "spread": 0.007, "priority_order": 2},
-        {"name": "South Service Road", "spread": 0.008, "priority_order": 3},
-        {"name": "Parking Overflow Lot", "spread": 0.009, "priority_order": 4},
+        {"name": zone_names[0], "spread": 0.004, "priority_order": 0},
+        {"name": zone_names[1], "spread": 0.005, "priority_order": 1},
+        {"name": zone_names[2], "spread": 0.007, "priority_order": 2},
+        {"name": zone_names[3], "spread": 0.008, "priority_order": 3},
+        {"name": zone_names[4], "spread": 0.009, "priority_order": 4},
     ]
 
     zone_count = 5 if congestion_score >= 60 else 4 if congestion_score >= 35 else 3

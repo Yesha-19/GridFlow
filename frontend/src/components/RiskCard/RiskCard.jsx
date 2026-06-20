@@ -87,10 +87,12 @@ export default function RiskCard({ event, prediction }) {
             / 100 score
           </span>
           {multiplier > 0 && (
-            <span className="mt-0.5 flex items-center gap-0.5 font-mono text-[10px] font-bold text-risk-high animate-pulse">
-              <span>{weatherData.condition === 'Clouds' ? '☁️' : '🌧️'}</span>
-              <span>+{Math.round(multiplier * 100)}%</span>
-            </span>
+            <div className="mt-1 flex items-center gap-1.5 rounded-full bg-risk-high/10 px-2 py-0.5 animate-pulse">
+              <span className="text-[10px]">{weatherData.condition === 'Clouds' ? '☁️' : '🌧️'}</span>
+              <span className="font-mono text-[9px] font-bold text-risk-high">
+                +{Math.round(multiplier * 100)}% WEATHER PENALTY
+              </span>
+            </div>
           )}
         </div>
       </div>

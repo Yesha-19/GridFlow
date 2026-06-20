@@ -17,7 +17,6 @@ import AnalyticsPanel from '../AnalyticsPanel/AnalyticsPanel.jsx';
 import HistoricalCard from '../HistoricalCard/HistoricalCard.jsx';
 import SeverityBadge from '../SeverityBadge/SeverityBadge.jsx';
 import EventTimeline from '../EventTimeline/EventTimeline.jsx';
-import AlertSystem from '../AlertSystem/AlertSystem.jsx';
 
 // ── Derived readiness state from risk score ──────────────────────────────────
 function getReadiness(score) {
@@ -208,7 +207,6 @@ export default function Dashboard({ event, prediction, resources, routing, histo
           <WeatherPanel />
           <ResourcePanel resources={resources} />
           <EventTimeline event={event} prediction={prediction} />
-          <AlertSystem event={event} prediction={prediction} />
           <HistoricalCard historicalComparison={historicalComparison} />
         </div>
       </div>

@@ -1,18 +1,35 @@
-import React, { useMemo } from 'react';
-import { Brain, TrendingUp, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Brain, TrendingUp, RefreshCw, Loader2 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { generateAccuracyTrend } from '../../utils/mockData';
-import { getRiskBand } from '../../utils/riskUtils';
+import { getAnalytics } from '../../services/analyticsApi';
 
 /**
  * LearningLoop — Post-event learning visualization.
- * Shows model accuracy improvement over time as a feedback loop.
+ * Shows model accuracy improvement over time using real database analytics.
  */
 export default function LearningLoop() {
-  const trend = useMemo(() => generateAccuracyTrend(), []);
+  const [trend, setTrend] = useState(null);
+  const [avgAccuracy, setAvgAccuracy] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const latestAccuracy = trend[trend.length - 1]?.accuracy ?? 0;
-  const improvement = (trend[trend.length - 1]?.accuracy ?? 0) - (trend[0]?.accuracy ?? 0);
+  useEffect(() => {
+    getAnalytics().then((res) => {
+      setTrend(res.accuracyTrend);
+      setAvgAccuracy(res.analytics.avgAccuracy);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading || !trend || trend.length === 0) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-xl border border-console-border bg-console-panel/80 p-5">
+        <Loader2 className="animate-spin text-signal" size={24} />
+      </div>
+    );
+  }
+
+  const latestAccuracy = avgAccuracy;
+  const improvement = avgAccuracy - (trend[0]?.accuracy ?? 0);
   const maxAccuracy = Math.max(...trend.map(t => t.accuracy));
 
   return (
@@ -28,7 +45,7 @@ export default function LearningLoop() {
         </span>
       </div>
       <p className="mt-1 text-xs text-console-muted">
-        Model accuracy improves as more post-event outcomes are logged.
+        Model accuracy improves as more post-event outcomes are logged from the database.
       </p>
 
       {/* Key metrics */}
@@ -44,10 +61,10 @@ export default function LearningLoop() {
           <span>MODEL ACCURACY OVER TIME</span>
           <span className="flex items-center gap-1">
             <TrendingUp size={10} className="text-risk-low" />
-            Trending up
+            Live Data
           </span>
         </div>
-        <div className="mt-2 h-24 w-full">
+        <div className="mt-2 h-36 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={trend}
@@ -93,29 +110,6 @@ export default function LearningLoop() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* Learning events log */}
-      <div className="mt-4 space-y-1.5">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-console-muted">
-          Recent weight updates
-        </p>
-        {[
-          { event: 'Ganesh Chaturthi outcome logged', delta: '+0.8%', time: '2h ago' },
-          { event: 'IPL match post-analysis complete', delta: '+0.5%', time: '1d ago' },
-          { event: 'Rally prediction calibrated', delta: '+1.2%', time: '3d ago' },
-        ].map((log, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-md bg-console-raised/40 px-2.5 py-1.5 text-[11px]"
-          >
-            <span className="text-console-text">{log.event}</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-risk-low">{log.delta}</span>
-              <span className="text-console-muted">{log.time}</span>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

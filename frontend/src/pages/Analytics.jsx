@@ -49,33 +49,21 @@ export default function Analytics() {
       </p>
 
       {/* KPI cards */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <KPICard
           icon={<Calendar size={16} />}
           label="Total Events Tracked"
           value={analytics.totalEvents.toLocaleString()}
-          trend="+12%"
         />
         <KPICard
           icon={<Target size={16} />}
           label="Model Accuracy"
           value={`${analytics.avgAccuracy}%`}
-          trend="+4.2%"
-          trendColor="text-risk-low"
         />
         <KPICard
           icon={<Zap size={16} />}
           label="Avg Response Time"
           value={`${analytics.avgResponseTime}min`}
-          trend="-3min"
-          trendColor="text-risk-low"
-        />
-        <KPICard
-          icon={<Award size={16} />}
-          label="Prediction Confidence"
-          value="89%"
-          trend="+6%"
-          trendColor="text-risk-low"
         />
       </div>
 
