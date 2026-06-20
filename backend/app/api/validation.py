@@ -157,16 +157,20 @@ async def get_validation_history(db: AsyncSession = Depends(get_db)):
     UI can show a "Waiting for Event Completion" state for future events
     and an actionable "Add Actual Event Data" state for completed ones.
     """
+    now = datetime.utcnow()
     result = await db.execute(
         select(Event, Prediction, Validation)
         .join(Prediction, Prediction.event_id == Event.id)
         .outerjoin(Validation, Validation.event_id == Event.id)
+        .where(
+            # Only show events that have already occurred or are explicitly completed
+            (Event.start_time <= now) | (Event.status == "completed")
+        )
         .order_by(Event.created_at.desc())
         .limit(50)
     )
     rows = result.all()
 
-    now = datetime.utcnow()
     history = []
     for event, prediction, validation in rows:
         event_occurred = bool(event.start_time and event.start_time <= now) or event.status == "completed"
