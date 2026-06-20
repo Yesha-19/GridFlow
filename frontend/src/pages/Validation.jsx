@@ -113,7 +113,7 @@ function eventTypeLabel(value) {
 
 function ComparisonBar({ predicted, actual, unit = '' }) {
   return (
-    <div className="space-y-2 w-full">
+    <div className="space-y-1.5 w-full">
       <BarRow label="Predicted" value={predicted} unit={unit} color="bg-signal" />
       <BarRow label="Actual" value={actual} unit={unit} color="bg-risk-moderate" />
     </div>
@@ -122,12 +122,11 @@ function ComparisonBar({ predicted, actual, unit = '' }) {
 
 function BarRow({ label, value, unit, color }) {
   return (
-    <div className="flex items-center justify-between gap-2 text-[11px] w-full max-w-[180px]">
-      <div className="flex items-center gap-1.5 text-console-muted">
+    <div className="flex items-center gap-4 text-[11px] w-full max-w-[140px]">
+      <div className="flex items-center gap-1.5 w-20 shrink-0 text-console-muted">
         <span className={`h-1.5 w-1.5 rounded-full ${color}`} />
         <span>{label}</span>
       </div>
-      
       <span className="font-mono text-console-text">
         {value}{unit}
       </span>
