@@ -28,6 +28,12 @@ DATABASE_URL: str = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set. Please provide a PostgreSQL connection string in the .env file.")
 
+# --- ADD THESE TWO LINES ---
+# Render gives 'postgres://', but SQLAlchemy async needs 'postgresql+asyncpg://'
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+# ---------------------------
+
 # ---------------------------------------------------------------------------
 # SQLAlchemy async engine
 # ---------------------------------------------------------------------------
