@@ -4,7 +4,6 @@ import { getValidationHistory, submitActualOutcome } from '../services/validatio
 import { UNPLANNED_EVENT_TYPES, PLANNED_EVENT_TYPES } from '../utils/constants';
 import { formatDateTime, formatMinutes, getRiskBand } from '../utils/riskUtils';
 import LearningLoop from '../components/LearningLoop/LearningLoop.jsx';
-import SeverityBadge from '../components/SeverityBadge/SeverityBadge.jsx';
 
 function computeAccuracy(predictedRisk, actualRisk, predictedDelay, actualDelay) {
   const riskError = Math.abs(predictedRisk - actualRisk) / 100;
@@ -85,7 +84,7 @@ export default function Validation() {
       {/* Main content grid */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         {/* Validation list */}
-        <div>
+        <div className="min-w-0">
           {history && (
             <div className="space-y-3">
               {history.map((row) =>
@@ -112,26 +111,25 @@ function eventTypeLabel(value) {
   return [...PLANNED_EVENT_TYPES, ...UNPLANNED_EVENT_TYPES].find((t) => t.value === value)?.label ?? value;
 }
 
-function ComparisonBar({ predicted, actual, max = 100, unit = '' }) {
+function ComparisonBar({ predicted, actual, unit = '' }) {
   return (
-    <div className="space-y-1">
-      <BarRow label="Predicted" value={predicted} max={max} unit={unit} color="bg-signal" />
-      <BarRow label="Actual" value={actual} max={max} unit={unit} color="bg-risk-moderate" />
+    <div className="space-y-2 w-full">
+      <BarRow label="Predicted" value={predicted} unit={unit} color="bg-signal" />
+      <BarRow label="Actual" value={actual} unit={unit} color="bg-risk-moderate" />
     </div>
   );
 }
 
-function BarRow({ label, value, max, unit, color }) {
-  const pct = Math.min(100, (value / max) * 100);
+function BarRow({ label, value, unit, color }) {
   return (
-    <div className="flex items-center gap-2 text-[11px]">
-      <span className="w-14 shrink-0 text-console-muted">{label}</span>
-      <div className="h-1.5 flex-1 rounded-full bg-console-raised">
-        <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} />
+    <div className="flex items-center justify-between gap-2 text-[11px] w-full max-w-[180px]">
+      <div className="flex items-center gap-1.5 text-console-muted">
+        <span className={`h-1.5 w-1.5 rounded-full ${color}`} />
+        <span>{label}</span>
       </div>
-      <span className="w-12 shrink-0 text-right font-mono text-console-text">
-        {value}
-        {unit}
+      
+      <span className="font-mono text-console-text">
+        {value}{unit}
       </span>
     </div>
   );
@@ -140,31 +138,38 @@ function BarRow({ label, value, max, unit, color }) {
 function ValidatedRow({ row }) {
   const band = getRiskBand(row.actualRiskScore);
   return (
-    <div className="rounded-xl border border-console-border bg-console-panel/80 p-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
-      <div className="sm:w-56">
+    <div className="rounded-xl border border-console-border bg-console-panel/80 p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 xl:gap-6 flex-wrap">
+      
+      <div className="w-full xl:w-48 shrink-0">
         <div className="flex items-center gap-2">
-          <p className="font-display text-sm font-semibold text-console-text">{row.eventName}</p>
+          <p className="font-display text-sm font-semibold text-console-text truncate">{row.eventName}</p>
         </div>
         <p className="mt-0.5 text-xs text-console-muted">
           {eventTypeLabel(row.eventType)} · {formatDateTime(row.eventDate)}
         </p>
       </div>
 
-      <div className="mt-3 grid flex-1 grid-cols-2 gap-4 sm:mt-0">
-        <ComparisonBar predicted={row.predictedRiskScore} actual={row.actualRiskScore} unit="" />
-        <ComparisonBar
-          predicted={row.predictedDelayMinutes}
-          actual={row.actualDelayMinutes}
-          max={Math.max(row.predictedDelayMinutes, row.actualDelayMinutes, 60)}
-          unit="m"
-        />
+      <div className="flex flex-col sm:flex-row flex-1 gap-6 w-full min-w-0">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-console-muted mb-2 uppercase tracking-wider">Risk Score</p>
+          <ComparisonBar predicted={row.predictedRiskScore} actual={row.actualRiskScore} unit="" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-console-muted mb-2 uppercase tracking-wider">Time Delay</p>
+          <ComparisonBar
+            predicted={row.predictedDelayMinutes}
+            actual={row.actualDelayMinutes}
+            unit="m"
+          />
+        </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 sm:mt-0">
+      <div className="shrink-0 flex items-center xl:justify-end w-full xl:w-auto mt-2 xl:mt-0">
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${band.softBgClass} ${band.textClass}`}>
           {row.accuracyPercent}% accurate
         </span>
       </div>
+      
     </div>
   );
 }
@@ -200,17 +205,17 @@ function PendingRow({ row, onValidated }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-dashed border-console-border bg-console-panel/50 p-4 sm:flex sm:items-end sm:gap-4"
+      className="rounded-xl border border-dashed border-console-border bg-console-panel/50 p-4 sm:flex sm:items-end sm:gap-4 flex-wrap"
     >
       <div className="sm:w-56">
-        <p className="font-display text-sm font-semibold text-console-text">{row.eventName}</p>
+        <p className="font-display text-sm font-semibold text-console-text truncate">{row.eventName}</p>
         <p className="mt-0.5 text-xs text-console-muted">
           Predicted {row.predictedRiskScore} risk · {formatMinutes(row.predictedDelayMinutes)} delay
         </p>
       </div>
 
-      <div className="mt-3 flex flex-1 flex-wrap items-end gap-3 sm:mt-0">
-        <label className="flex flex-col gap-1">
+      <div className="mt-3 flex flex-1 flex-wrap items-end gap-3 sm:mt-0 min-w-0">
+        <label className="flex flex-col gap-1 w-full sm:w-auto">
           <span className="text-[11px] text-console-muted">Actual risk score</span>
           <input
             type="number"
@@ -218,25 +223,25 @@ function PendingRow({ row, onValidated }) {
             max={100}
             value={actualRiskScore}
             onChange={(e) => setActualRiskScore(e.target.value)}
-            className="input w-32"
+            className="input w-full sm:w-32"
             placeholder="0–100"
           />
         </label>
-        <label className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1 w-full sm:w-auto">
           <span className="text-[11px] text-console-muted">Actual delay (min)</span>
           <input
             type="number"
             min={0}
             value={actualDelayMinutes}
             onChange={(e) => setActualDelayMinutes(e.target.value)}
-            className="input w-32"
+            className="input w-full sm:w-32"
             placeholder="minutes"
           />
         </label>
         <button
           type="submit"
           disabled={!canSubmit}
-          className="flex items-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
         >
           {submitting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
           Log outcome
