@@ -1,13 +1,11 @@
 """
-db.py — SQLAlchemy async engine with SQLite for zero-setup demo.
+db.py — SQLAlchemy async engine with PostgreSQL.
 
-Uses aiosqlite for async SQLite support — no PostgreSQL needed for
-hackathon demo. Keeps the same ORM interface for production migration.
+Uses asyncpg for async PostgreSQL support.
 """
 
 import os
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import AsyncGenerator
 from dotenv import load_dotenv
 
@@ -22,17 +20,13 @@ from sqlalchemy.orm import DeclarativeBase
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Database URL — SQLite for demo, PostgreSQL for production
+# Database URL — PostgreSQL
 # ---------------------------------------------------------------------------
 
 
-_DB_DIR = Path(__file__).resolve().parent.parent.parent
-_SQLITE_PATH = _DB_DIR / "gridlock_demo.db"
-
-DATABASE_URL: str = os.getenv(
-    "DATABASE_URL",
-    f"sqlite+aiosqlite:///{_SQLITE_PATH}",
-)
+DATABASE_URL: str = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set. Please provide a PostgreSQL connection string in the .env file.")
 
 # ---------------------------------------------------------------------------
 # SQLAlchemy async engine
@@ -41,8 +35,6 @@ DATABASE_URL: str = os.getenv(
 engine: AsyncEngine = create_async_engine(
     DATABASE_URL,
     echo=os.getenv("SQLALCHEMY_ECHO", "false").lower() == "true",
-    # SQLite-specific settings
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 
 # ---------------------------------------------------------------------------
