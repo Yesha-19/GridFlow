@@ -1,21 +1,72 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Circle, Polyline, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Map, Layers, Tent } from 'lucide-react';
+import { Map, Layers, Tent, RotateCcw } from 'lucide-react';
 import { getRiskBand } from '../../utils/riskUtils';
 import { createVenueIcon, createZoneIcon } from '../../utils/mapIcons';
 import { generateHeatmapData, generateCrowdFlowData } from '../../utils/mockData';
 import { useEventContext } from '../../context/EventContext.jsx';
 import HeatmapLayer from './HeatmapLayer';
 
-// Component to handle map re-centering
-function MapController({ center, zoom }) {
+/**
+ * UserAwareMapController — preserves user viewport after any pan/zoom/drag.
+ * Only re-centers when:
+ *  1. The event center actually changes (different event), OR
+ *  2. The user explicitly clicks "Reset Map View" (via resetTrigger counter)
+ *
+ * Once the user interacts (pan/zoom/drag), auto-centering is disabled until
+ * the next explicit reset or event change.
+ */
+function UserAwareMapController({ center, zoom, resetTrigger, onMapReady }) {
   const map = useMap();
+  const userHasInteracted = useRef(false);
+  const prevCenter = useRef(null);
+  const prevResetTrigger = useRef(0);
+
+  // Expose the map instance to the parent via callback
   useEffect(() => {
-    if (center) {
+    if (onMapReady) onMapReady(map);
+  }, [map, onMapReady]);
+
+  // Listen for user-initiated map interactions
+  useEffect(() => {
+    function handleUserInteraction() {
+      userHasInteracted.current = true;
+    }
+
+    map.on('dragend', handleUserInteraction);
+    map.on('zoomend', handleUserInteraction);
+
+    return () => {
+      map.off('dragend', handleUserInteraction);
+      map.off('zoomend', handleUserInteraction);
+    };
+  }, [map]);
+
+  // Handle explicit reset via button
+  useEffect(() => {
+    if (resetTrigger > prevResetTrigger.current) {
+      prevResetTrigger.current = resetTrigger;
+      userHasInteracted.current = false;
+      if (center) {
+        map.setView(center, zoom, { animate: true, duration: 1.5 });
+      }
+    }
+  }, [resetTrigger, center, zoom, map]);
+
+  // Only auto-center on genuine event change (different lat/lng), and ONLY if user hasn't interacted
+  useEffect(() => {
+    if (!center) return;
+
+    const prev = prevCenter.current;
+    const centerChanged = !prev || prev[0] !== center[0] || prev[1] !== center[1];
+    prevCenter.current = center;
+
+    if (centerChanged && !userHasInteracted.current) {
       map.setView(center, zoom, { animate: true, duration: 1.5 });
     }
   }, [center, zoom, map]);
+
   return null;
 }
 
@@ -24,6 +75,7 @@ export default function RouteMap({ event, prediction, resources, routing }) {
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showCrowd, setShowCrowd] = useState(false);
   const [showZones, setShowZones] = useState(true);
+  const [resetTrigger, setResetTrigger] = useState(0);
 
   if (!event || !routing) return null;
 
@@ -51,7 +103,7 @@ export default function RouteMap({ event, prediction, resources, routing }) {
           )}
         </div>
         
-        {/* Map Layers Toggle */}
+        {/* Map Layers Toggle + Reset Button */}
         <div className="flex items-center gap-2 rounded-md bg-console-bg p-1">
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
@@ -69,6 +121,14 @@ export default function RouteMap({ event, prediction, resources, routing }) {
           >
             <Tent size={12} /> Barricades
           </button>
+          {/* Reset Map View — ONLY manual reset trigger */}
+          <button
+            onClick={() => setResetTrigger((t) => t + 1)}
+            title="Reset Map View"
+            className="flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-console-muted transition-colors hover:bg-console-raised hover:text-console-text"
+          >
+            <RotateCcw size={12} /> Reset View
+          </button>
         </div>
       </div>
 
@@ -80,7 +140,7 @@ export default function RouteMap({ event, prediction, resources, routing }) {
           zoomControl={false}
           attributionControl={false}
         >
-          <MapController center={center} zoom={14} />
+          <UserAwareMapController center={center} zoom={14} resetTrigger={resetTrigger} />
 
           {/* Dark Base Map */}
           <TileLayer

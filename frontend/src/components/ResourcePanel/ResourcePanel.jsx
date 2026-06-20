@@ -37,40 +37,6 @@ export default function ResourcePanel({ resources }) {
           </div>
         ))}
       </div>
-
-      {resources.deploymentZones?.length > 0 && (
-        <div className="mt-5">
-          <h4 className="text-xs font-medium text-console-muted">Priority deployment zones</h4>
-          <ul className="mt-2 space-y-1.5">
-            {resources.deploymentZones.map((zone, i) => {
-              const band = RISK_LEVELS[zone.priority] ?? RISK_LEVELS.low;
-              return (
-                <li
-                  key={zone.id}
-                  className="flex items-center justify-between rounded-md border border-console-border bg-console-raised/40 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-[11px] text-console-muted">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-sm text-console-text">{zone.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-xs text-console-muted">
-                      {zone.personnelCount} pax
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${band.softBgClass} ${band.textClass}`}
-                    >
-                      {band.label}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

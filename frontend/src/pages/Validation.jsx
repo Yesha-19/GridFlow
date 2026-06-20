@@ -130,51 +130,62 @@ export default function Validation() {
       )}
 
       {/* Main content grid */}
-      {history && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-8">
-            {/* Pending Validation */}
-            <section>
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-console-muted">
-                Pending Validation
-              </h2>
-
-              {pendingRows.length === 0 ? (
-                <EmptyState onAddEvent={() => setManualModalOpen(true)} />
-              ) : (
-                <div className="space-y-3">
-                  {pendingRows.map((row) => (
-                    <PendingRow
-                      key={row.id}
-                      row={row}
-                      onAddActuals={() => setActiveRow(row)}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Validated Events */}
-            {validatedRows.length > 0 && (
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        {/* Validation list */}
+        <div className="min-w-0">
+          {history && (
+            <div className="space-y-8">
+              {/* Pending Events */}
               <section>
-                <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-console-muted">
-                  Validated Events
-                </h2>
-                <div className="space-y-3">
-                  {validatedRows.map((row) => (
-                    <ValidatedRow key={row.id} row={row} />
-                  ))}
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-console-muted">
+                    Pending Validation
+                  </h2>
+                  <button
+                    onClick={() => setManualModalOpen(true)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-signal hover:text-signal/80"
+                  >
+                    <PlusCircle size={14} />
+                    Add Event
+                  </button>
                 </div>
+                {pendingRows.length === 0 ? (
+                  <EmptyState onAddEvent={() => setManualModalOpen(true)} />
+                ) : (
+                  <div className="space-y-3">
+                    {pendingRows.map((row) => (
+                      <PendingRow
+                        key={row.id}
+                        row={row}
+                        onAddActuals={() => setActiveRow(row)}
+                      />
+                    ))}
+                  </div>
+                )}
               </section>
-            )}
-          </div>
 
-          {/* Learning Loop sidebar */}
-          <div className="lg:sticky lg:top-20 lg:self-start">
-            <LearningLoop />
-          </div>
+              {/* Validated Events */}
+              {validatedRows.length > 0 && (
+                <section>
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-console-muted">
+                    Validated Events
+                  </h2>
+                  <div className="space-y-3">
+                    {validatedRows.map((row) => (
+                      <ValidatedRow key={row.id} row={row} />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Learning Loop sidebar */}
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <LearningLoop />
+        </div>
+      </div>
 
       {activeRow && (
         <ActualOutcomeModal
@@ -274,28 +285,29 @@ function ComparisonColumns({ row }) {
   );
 }
 
-function Metric({ label, value, band }) {
+function eventTypeLabel(value) {
+  return [...PLANNED_EVENT_TYPES, ...UNPLANNED_EVENT_TYPES].find((t) => t.value === value)?.label ?? value;
+}
+
+function ComparisonBar({ predicted, actual, unit = '' }) {
   return (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-console-muted">{label}</span>
-      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${band.softBgClass} ${band.textClass}`}>
-        {value}
-      </span>
+    <div className="space-y-2 w-full">
+      <BarRow label="Predicted" value={predicted} unit={unit} color="bg-signal" />
+      <BarRow label="Actual" value={actual} unit={unit} color="bg-risk-moderate" />
     </div>
   );
 }
 
-function BarRow({ value, max, unit, color }) {
-  const pct = max ? Math.min(100, (value / max) * 100) : 0;
+function BarRow({ label, value, unit, color }) {
   return (
-    <div className="flex items-center gap-2 text-[11px]">
-      <span className="w-10 shrink-0 text-console-muted">Delay</span>
-      <div className="h-1.5 flex-1 rounded-full bg-console-raised">
-        <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} />
+    <div className="flex items-center justify-between gap-2 text-[11px] w-full max-w-[180px]">
+      <div className="flex items-center gap-1.5 text-console-muted">
+        <span className={`h-1.5 w-1.5 rounded-full ${color}`} />
+        <span>{label}</span>
       </div>
-      <span className="w-12 shrink-0 text-right font-mono text-console-text">
-        {value}
-        {unit}
+      
+      <span className="font-mono text-console-text">
+        {value}{unit}
       </span>
     </div>
   );
@@ -305,83 +317,35 @@ function BarRow({ value, max, unit, color }) {
 function ValidatedRow({ row }) {
   const band = row.actualRiskScore != null ? getRiskBand(row.actualRiskScore) : getRiskBand(row.predictedRiskScore);
   return (
-    <div className="rounded-xl border border-console-border bg-console-panel/80 p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div className="sm:w-48 shrink-0">
-          <p className="font-display text-sm font-semibold leading-snug text-console-text">
-            {row.eventName}
-          </p>
-          <p className="mt-0.5 text-xs text-console-muted">
-            {eventTypeLabel(row.eventType)}
-          </p>
-          <p className="mt-0.5 text-xs text-console-muted">{formatDateTime(row.eventDate)}</p>
-        </div>
-
-        <div className="flex-1">
-          <ComparisonColumns row={row} />
-        </div>
-
-        <div className="shrink-0 sm:text-right">
-          <span
-            className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${band.softBgClass} ${band.textClass}`}
-          >
-            {row.accuracyPercent}% accurate
-          </span>
+    <div className="rounded-xl border border-console-border bg-console-panel/80 p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 xl:gap-6 flex-wrap">
+      
+      <div className="w-full xl:w-48 shrink-0">
+        <div className="flex items-center gap-2">
+          <p className="font-display text-sm font-semibold text-console-text truncate">{row.eventName}</p>
         </div>
       </div>
 
-      {(row.actualCrowdSize != null || row.actualResourceUsage || row.actualIncidentCount != null || row.notes) && (
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 border-t border-console-border pt-3 text-[11px] text-console-muted">
-          {row.actualCrowdSize != null && <span>Crowd: {row.actualCrowdSize.toLocaleString('en-IN')}</span>}
-          {row.actualResourceUsage && <span>Resources: {row.actualResourceUsage}</span>}
-          {row.actualIncidentCount != null && <span>Incidents: {row.actualIncidentCount}</span>}
-          {row.notes && <span className="italic">"{row.notes}"</span>}
+      <div className="flex flex-col sm:flex-row flex-1 gap-6 w-full min-w-0">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-console-muted mb-2 uppercase tracking-wider">Risk Score</p>
+          <ComparisonBar predicted={row.predictedRiskScore} actual={row.actualRiskScore} unit="" />
         </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Pending row ────────────────────────────────────────────────────────────
-function PendingRow({ row, onAddActuals }) {
-  return (
-    <div className="rounded-xl border border-dashed border-console-border bg-console-panel/50 p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-        <div className="sm:w-56">
-          <p className="font-display text-sm font-semibold leading-snug text-console-text">
-            {row.eventName}
-          </p>
-          <p className="mt-0.5 text-xs text-console-muted">
-            {eventTypeLabel(row.eventType)} · {formatDateTime(row.eventDate)}
-          </p>
-          <p className="mt-1 text-xs text-console-muted">
-            Predicted {row.predictedRiskScore} risk · {formatMinutes(row.predictedDelayMinutes)} delay
-          </p>
-        </div>
-
-        <div className="shrink-0">
-          {row.eventOccurred ? (
-            <button
-              type="button"
-              onClick={onAddActuals}
-              className="flex w-full items-center justify-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 sm:w-auto"
-            >
-              <CheckCircle2 size={14} />
-              Add Actual Event Data
-            </button>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-console-border bg-console-raised/50 px-3 py-1.5 text-xs font-medium text-console-muted">
-              <Clock size={13} />
-              Waiting for Event Completion
-            </span>
-          )}
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-console-muted mb-2 uppercase tracking-wider">Time Delay</p>
+          <ComparisonBar
+            predicted={row.predictedDelayMinutes}
+            actual={row.actualDelayMinutes}
+            unit="m"
+          />
         </div>
       </div>
-      <div className="mt-2">
-        <span className="inline-block rounded-full bg-console-raised px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-console-muted">
-          Pending Validation
+
+      <div className="shrink-0 flex items-center xl:justify-end w-full xl:w-auto mt-2 xl:mt-0">
+        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${band.softBgClass} ${band.textClass}`}>
+          {row.accuracyPercent}% accurate
         </span>
       </div>
+      
     </div>
   );
 }
@@ -457,282 +421,50 @@ function ActualOutcomeModal({ row, onClose, onSubmitted }) {
   }
 
   return (
-    <ModalShell title="Add Actual Event Data" onClose={onClose}>
-      <div className="mb-4 rounded-md border border-console-border bg-console-raised/30 p-3 text-xs text-console-muted">
-        <p className="font-semibold text-console-text">{row.eventName}</p>
-        <p>{eventTypeLabel(row.eventType)} · {formatDateTime(row.eventDate)}</p>
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-xl border border-dashed border-console-border bg-console-panel/50 p-4 sm:flex sm:items-end sm:gap-4 flex-wrap"
+    >
+      <div className="sm:w-56">
+        <p className="font-display text-sm font-semibold text-console-text truncate">{row.eventName}</p>
+        <p className="mt-0.5 text-xs text-console-muted">
+          Predicted {row.predictedRiskScore} risk · {formatMinutes(row.predictedDelayMinutes)} delay
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Actual Crowd Size">
-            <input
-              type="number"
-              min={0}
-              className="input"
-              placeholder="e.g. 3200"
-              value={form.actualCrowdSize}
-              onChange={(e) => setForm({ ...form, actualCrowdSize: e.target.value })}
-            />
-          </Field>
-          <Field label="Actual Delay Duration (min)">
-            <input
-              type="number"
-              min={0}
-              required
-              className="input"
-              placeholder="minutes"
-              value={form.actualDelayMinutes}
-              onChange={(e) => setForm({ ...form, actualDelayMinutes: e.target.value })}
-            />
-          </Field>
-        </div>
-
-        <Field label="Actual Risk Level">
-          <select
-            className="input"
-            value={form.actualRiskLevel}
-            onChange={(e) => setForm({ ...form, actualRiskLevel: e.target.value })}
-          >
-            {RISK_LEVEL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Actual Resource Usage">
-            <input
-              type="text"
-              className="input"
-              placeholder="e.g. 8 officers, 4 barricades"
-              value={form.actualResourceUsage}
-              onChange={(e) => setForm({ ...form, actualResourceUsage: e.target.value })}
-            />
-          </Field>
-          <Field label="Actual Incident Count">
-            <input
-              type="number"
-              min={0}
-              className="input"
-              placeholder="0"
-              value={form.actualIncidentCount}
-              onChange={(e) => setForm({ ...form, actualIncidentCount: e.target.value })}
-            />
-          </Field>
-        </div>
-
-        <Field label="Notes (optional)">
-          <textarea
-            rows={3}
-            className="input resize-none"
-            placeholder="Any observations relevant to this validation…"
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          />
-        </Field>
-
-        {error && <p className="text-xs text-risk-critical">{error}</p>}
-
-        <div className="flex justify-end gap-3 border-t border-console-border pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md px-3.5 py-2 text-xs font-semibold text-console-muted transition-colors hover:text-console-text"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="flex items-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
-            Submit Validation
-          </button>
-        </div>
-      </form>
-    </ModalShell>
-  );
-}
-
-// ─── Manual event creation + validation (empty-state action) ──────────────
-function ManualEventModal({ onClose, onSubmitted }) {
-  const [form, setForm] = useState({
-    eventName: '',
-    eventType: PLANNED_EVENT_TYPES[0].value,
-    eventDateTime: '',
-    actualCrowdSize: '',
-    actualDelayMinutes: '',
-    actualRiskLevel: 'moderate',
-    actualResourceUsage: '',
-    actualIncidentCount: '',
-    notes: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const canSubmit =
-    form.eventName.trim() !== '' &&
-    form.eventDateTime !== '' &&
-    form.actualDelayMinutes !== '' &&
-    !submitting;
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!canSubmit) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      const result = await submitManualValidationEvent({
-        eventName: form.eventName.trim(),
-        eventType: form.eventType,
-        eventDateTime: new Date(form.eventDateTime).toISOString(),
-        actualCrowdSize: form.actualCrowdSize === '' ? null : Number(form.actualCrowdSize),
-        actualDelayMinutes: Number(form.actualDelayMinutes),
-        actualRiskLevel: form.actualRiskLevel,
-        actualResourceUsage: form.actualResourceUsage || null,
-        actualIncidentCount: form.actualIncidentCount === '' ? null : Number(form.actualIncidentCount),
-        notes: form.notes || null,
-      });
-      onSubmitted({
-        ...result,
-        eventName: form.eventName.trim(),
-        eventType: form.eventType,
-        eventDate: new Date(form.eventDateTime).toISOString(),
-      });
-    } catch (err) {
-      setError(err.message || 'Could not add event.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <ModalShell title="Add Event for Validation" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Event Name">
+      <div className="mt-3 flex flex-1 flex-wrap items-end gap-3 sm:mt-0 min-w-0">
+        <label className="flex flex-col gap-1 w-full sm:w-auto">
+          <span className="text-[11px] text-console-muted">Actual risk score</span>
           <input
-            type="text"
-            required
-            className="input"
-            placeholder="e.g. Republic Day Parade"
-            value={form.eventName}
-            onChange={(e) => setForm({ ...form, eventName: e.target.value })}
+            type="number"
+            min={0}
+            max={100}
+            value={actualRiskScore}
+            onChange={(e) => setActualRiskScore(e.target.value)}
+            className="input w-full sm:w-32"
+            placeholder="0–100"
           />
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Event Type">
-            <select
-              className="input"
-              value={form.eventType}
-              onChange={(e) => setForm({ ...form, eventType: e.target.value })}
-            >
-              {[...PLANNED_EVENT_TYPES, ...UNPLANNED_EVENT_TYPES].map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Event Date & Time">
-            <input
-              type="datetime-local"
-              required
-              className="input"
-              value={form.eventDateTime}
-              onChange={(e) => setForm({ ...form, eventDateTime: e.target.value })}
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Actual Crowd Size">
-            <input
-              type="number"
-              min={0}
-              className="input"
-              placeholder="e.g. 3200"
-              value={form.actualCrowdSize}
-              onChange={(e) => setForm({ ...form, actualCrowdSize: e.target.value })}
-            />
-          </Field>
-          <Field label="Actual Delay Duration (min)">
-            <input
-              type="number"
-              min={0}
-              required
-              className="input"
-              placeholder="minutes"
-              value={form.actualDelayMinutes}
-              onChange={(e) => setForm({ ...form, actualDelayMinutes: e.target.value })}
-            />
-          </Field>
-        </div>
-
-        <Field label="Actual Risk Level">
-          <select
-            className="input"
-            value={form.actualRiskLevel}
-            onChange={(e) => setForm({ ...form, actualRiskLevel: e.target.value })}
-          >
-            {RISK_LEVEL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Actual Resource Usage">
-            <input
-              type="text"
-              className="input"
-              placeholder="e.g. 8 officers, 4 barricades"
-              value={form.actualResourceUsage}
-              onChange={(e) => setForm({ ...form, actualResourceUsage: e.target.value })}
-            />
-          </Field>
-          <Field label="Actual Incident Count">
-            <input
-              type="number"
-              min={0}
-              className="input"
-              placeholder="0"
-              value={form.actualIncidentCount}
-              onChange={(e) => setForm({ ...form, actualIncidentCount: e.target.value })}
-            />
-          </Field>
-        </div>
-
-        <Field label="Notes (optional)">
-          <textarea
-            rows={3}
-            className="input resize-none"
-            placeholder="Any observations relevant to this validation…"
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        </label>
+        <label className="flex flex-col gap-1 w-full sm:w-auto">
+          <span className="text-[11px] text-console-muted">Actual delay (min)</span>
+          <input
+            type="number"
+            min={0}
+            value={actualDelayMinutes}
+            onChange={(e) => setActualDelayMinutes(e.target.value)}
+            className="input w-full sm:w-32"
+            placeholder="minutes"
           />
-        </Field>
-
-        {error && <p className="text-xs text-risk-critical">{error}</p>}
-
-        <div className="flex justify-end gap-3 border-t border-console-border pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md px-3.5 py-2 text-xs font-semibold text-console-muted transition-colors hover:text-console-text"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="flex items-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="animate-spin" size={14} /> : <PlusCircle size={14} />}
-            Add &amp; Validate
-          </button>
-        </div>
-      </form>
-    </ModalShell>
+        </label>
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="flex items-center justify-center gap-1.5 rounded-md bg-signal px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
+        >
+          {submitting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
+          Log outcome
+        </button>
+      </div>
+    </form>
   );
 }
