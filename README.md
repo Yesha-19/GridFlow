@@ -82,10 +82,14 @@ pip install -r backend/requirements.txt
 
 #### 2c. Configure the backend environment
 
-The backend uses **PostgreSQL** for its database. Create a `backend/.env` file with your connection string:
+The backend uses **PostgreSQL** for its database. Create a `backend/.env` file with your connection string and any optional variables:
 
 ```env
+# Required: PostgreSQL connection string
 DATABASE_URL="postgresql+asyncpg://user:password@localhost:5432/gridlock"
+
+# Optional: Enable SQLAlchemy query logging (default: false)
+# SQLALCHEMY_ECHO="false"
 ```
 *(Note: If you use Supabase, provide an empty database. The server will auto-create tables and seed them with historical data on first run.)*
 
@@ -127,7 +131,23 @@ cd frontend
 npm install
 ```
 
-#### 3c. Start the Vite development server
+#### 3c. Configure the frontend environment
+
+Create a `.env` file inside the `frontend` directory. Here are the available variables you can configure:
+
+```env
+# Required: Point this to your local FastAPI server
+VITE_API_BASE_URL="http://localhost:8000/api"
+
+# Optional: Supabase credentials (if connecting to Supabase from the frontend)
+VITE_SUPABASE_URL="your_supabase_url_here"
+VITE_SUPABASE_ANON_KEY="your_supabase_anon_key_here"
+
+# Optional: OpenWeatherMap API key for live weather data
+VITE_OPENWEATHER_API_KEY="your_openweather_api_key_here"
+```
+
+#### 3d. Start the Vite development server
 
 ```bash
 npm run dev
