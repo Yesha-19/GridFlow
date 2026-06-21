@@ -27,6 +27,14 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -34,11 +42,10 @@ export default function Auth() {
         await login(email, password);
         navigate('/dashboard'); // redirect after login
       } else {
-        if (!username) {
-          throw new Error("Username is required");
+        if (!username || username.trim().length < 3) {
+          throw new Error("Username must be at least 3 characters long");
         }
         await signup(email, password, username);
-        // Supabase might require email confirmation, but usually logs them in immediately if disabled.
         alert("Account created successfully! You can now log in.");
         setIsLogin(true);
       }
@@ -206,10 +213,6 @@ export default function Auth() {
             </button>
           </p>
         </div>
-
-        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-console-muted/70">
-          Flipkart Gridflow Hackathon 
-        </p>
       </div>
     </div>
   );

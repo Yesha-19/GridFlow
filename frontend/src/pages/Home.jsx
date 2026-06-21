@@ -40,7 +40,7 @@ export default function Home() {
       <section className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-console-border bg-console-panel px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-signal">
-            <Radar size={12} /> Flipkart Gridflow Hackathon
+            <Radar size={12} /> Gridflow System
           </span>
           <h1 className="mt-4 font-display text-4xl font-semibold leading-tight text-console-text sm:text-5xl">
             See the jam<br /> before it forms.
