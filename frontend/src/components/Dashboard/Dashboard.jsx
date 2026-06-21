@@ -17,6 +17,7 @@ import AnalyticsPanel from '../AnalyticsPanel/AnalyticsPanel.jsx';
 import HistoricalCard from '../HistoricalCard/HistoricalCard.jsx';
 import SeverityBadge from '../SeverityBadge/SeverityBadge.jsx';
 import EventTimeline from '../EventTimeline/EventTimeline.jsx';
+import { useEventContext } from '../../context/EventContext.jsx';
 
 // ── Derived readiness state from risk score ──────────────────────────────────
 function getReadiness(score) {
