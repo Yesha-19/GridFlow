@@ -28,9 +28,12 @@ export default function Auth() {
     e.preventDefault();
     setError('');
     
+    // Auto-lowercase email to prevent case-sensitivity login bugs
+    const normalizedEmail = email.trim().toLowerCase();
+    
     // Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       setError("Please enter a valid email address");
       return;
     }
@@ -39,7 +42,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        await login(email, password);
+        await login(normalizedEmail, password);
         navigate('/dashboard'); // redirect after login
       } else {
         if (!username || username.trim().length < 3) {
