@@ -2,6 +2,8 @@
 
 > **Real-time congestion forecasting and resource deployment for the Bengaluru Traffic Police.**
 
+🌍 **Live Deployment:** [https://grid-flow-five.vercel.app](https://grid-flow-five.vercel.app)
+
 Gridflow is an event-driven congestion prediction system that uses historical traffic data and machine learning (XGBoost) to forecast the impact of planned events (political rallies, sports matches, festivals) and unplanned incidents (accidents, tree falls, waterlogging). It recommends optimal manpower, barricading strategies, and diversion plans — before gridlock hits.
 
 ---
@@ -93,14 +95,14 @@ DATABASE_URL="postgresql+asyncpg://user:password@localhost:5432/gridlock"
 ```bash
 set PYTHONIOENCODING=utf-8
 cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **macOS / Linux:**
 ```bash
 export PYTHONIOENCODING=utf-8
 cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 The backend API will be running at: **`http://localhost:8000`**
